@@ -7,12 +7,19 @@
             [compojure.handler :refer [site]]
             [compojure.core :refer [defroutes GET PUT POST DELETE ANY]]))
 
+; TODO: from DB
+(def all-scores (atom [{:id 1 :game tableu-cnake :score 1 :date "2015-08-27T21:23" :game-time 30}
+                  {:id 2 :game tableu-cnake :score 2 :date "2015-08-27T21:24" :game-time 22}
+                  ]))
+
+(defresource get-scores
+             :allowed-methods [:get]
+             :handle-ok (fn [_] (generate-string @all-scores))
+             :available-media-types ["application/json"])
+
 (defroutes app
-           (ANY "/" [] (resource))
-           (ANY "/foo" [] (resource :available-media-types ["text/html"]
-                                    :handle-ok (fn [ctx]
-                                                 (format "<html>It's %d milliseconds since the beginning of the epoch."
-                                                         (System/currentTimeMillis))))))
+           (ANY "/" resource)
+           (ANY "/get-scores" resource get-scores))
 
 (def handler
   (-> app
@@ -20,4 +27,4 @@
 
 (defn -main [& [port]]
   (let [port (Integer. (or port (env :port) 80))]
-    (jetty/run-jetty (site #'app) {:port port :join? false})))
+    (jetty/run-jetty (site #'handler) {:port port :join? false})))
