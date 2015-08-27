@@ -7,6 +7,8 @@
   :ring {:handler clj-highscore.core/handler}
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [liberator "0.13"]
+                 ;[korma "0.4.2"]
+                 [postgresql "9.1-901-1.jdbc4"]
                  [compojure "1.4.0"]
                  [cheshire "5.5.0"]
                  [ring/ring-jetty-adapter "1.4.0"]
