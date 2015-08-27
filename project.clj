@@ -8,7 +8,9 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [liberator "0.13"]
                  [compojure "1.4.0"]
+                 [ring/ring-jetty-adapter "1.4.0"]
+                 [environ "1.0.0"]
                  [ring/ring-core "1.4.0"]]
-;  :main ^:skip-aot clj-highscore.core
+  :main ^:skip-aot clj-highscore.core
   :target-path "target/%s"
-  :profiles {:uberjar {:aot :all}})
+  :profiles {:production {:env {:production true}}})
