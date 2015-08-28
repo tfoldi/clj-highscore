@@ -3,8 +3,6 @@
   (:require [liberator.core :refer [resource defresource]]
             [ring.adapter.jetty :as jetty]
             [ring.middleware.params :refer [wrap-params]]
-    ;[korma.db]
-    ;[korma.core]
             [clojure.java.jdbc :as db]
             [environ.core :refer [env]]
             [cheshire.core :refer [generate-string]]
@@ -17,10 +15,9 @@
             ["select * from scores where game = ? " game]))
 
 (defresource get-scores
+             [game]
              :allowed-methods [:get]
-             :handle-ok (fn [context]
-                          (let [game (get-in context [:request :params :game])]
-                            (generate-string (vector game (all-scores game)))))
+             :handle-ok (fn [_] (generate-string (vector game (all-scores game))))
              :available-media-types ["application/json"])
 
 (defresource add-score
@@ -38,7 +35,7 @@
 
 (defroutes app
            (ANY "/" resource)
-           (ANY "/get-scores" resource get-scores))
+           (GET "/get-scores/:game" [game] (get-scores game))
 
 (def handler
   (-> app
