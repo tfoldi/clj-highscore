@@ -33,7 +33,7 @@
              (fn [context]
                (let [params (get-in context [:request :form-params])]
                  (println "ADD")))
-             :handle-created (fn [_] (generate-string (all-scores (get params "game"))))
+             :handle-created (fn [_] (generate-string (all-scores "tableau-cnake")))
              :available-media-types ["application/json"])
 
 (defroutes app
