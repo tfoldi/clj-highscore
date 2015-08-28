@@ -10,14 +10,26 @@
             [compojure.core :refer [defroutes GET PUT POST DELETE ANY]]))
 
 (defn all-scores
-  [game]
+  [game limit offset]
   (db/query (env :database-url)
-            ["select * from scores where game = ? " game]))
+            ["select *
+            from scores w
+            here game = ?
+            order by score desc, gametime asc
+            limit ? offset ?" game (or limit "ALL") (or offset 0)]))
+
+(defn- get-param
+  [ctx param]
+  (get-in ctx [:request :form-params param])
+  )
 
 (defresource get-scores
              [game]
              :allowed-methods [:get]
-             :handle-ok (fn [_] (generate-string (vector game (all-scores game))))
+             :handle-ok (fn [ctx]
+                          (generate-string
+                            (vector game
+                                    (all-scores game (get-param ctx :offset) (get-param ctx :limit)))))
              :available-media-types ["application/json"])
 
 (defresource add-score
