@@ -35,11 +35,9 @@
 
 (defroutes app
            (ANY "/" resource)
-           (GET "/get-scores/:game" [game] (get-scores game))
+           (GET "/get-scores/:game" [game] (get-scores game)))
 
-(def handler
-  (-> app
-      wrap-params))
+(def handler (-> app wrap-params))
 
 (defn -main [& [port]]
   (let [port (Integer. (or port (env :port) 80))]
