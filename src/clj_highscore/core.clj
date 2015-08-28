@@ -14,7 +14,7 @@
 (defn all-scores
   [game]
   (db/query (env :database-url)
-            ["select * from scores where game = ? " (second game)]))
+            ["select * from scores where game = ? " game]))
 
 (defresource get-scores
              :allowed-methods [:get]
