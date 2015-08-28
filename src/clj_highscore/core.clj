@@ -14,7 +14,7 @@
   (db/query (env :database-url)
             ["select *
             from scores w
-            here game = ?
+            where game = ?
             order by score desc, gametime asc
             limit ? offset ?" game (or limit "ALL") (or offset 0)]))
 
