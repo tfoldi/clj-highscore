@@ -11,20 +11,16 @@
             [compojure.handler :refer [site]]
             [compojure.core :refer [defroutes GET PUT POST DELETE ANY]]))
 
-
-; TODO: from DB
-(def all-scores (atom [{:id 1 :game :tableu-cnake :score 1 :date "2015-08-27T21:23" :game-time 30}
-                       {:id 2 :game :tableu-cnake :score 2 :date "2015-08-27T21:24" :game-time 22}]))
+(defn all-scores
+  [game]
+  (db/query (env :database-url)
+            ["select * from scores where game = ? " (second game)]))
 
 (defresource get-scores
              :allowed-methods [:get]
              :handle-ok (fn [context]
                           (let [game (get-in context [:request :params :game])]
-                            (generate-string (vector game
-                                                     (db/query (env :database-url)
-                                                               ["select * from scores where game = ? " (second game)]
-                                                               )
-                                                     ))))
+                            (generate-string (vector game (all-scores game)))))
              :available-media-types ["application/json"])
 
 (defresource add-score
@@ -36,8 +32,8 @@
              :post!
              (fn [context]
                (let [params (get-in context [:request :form-params])]
-                 (swap! users conj (get params "game"))))
-             :handle-created (fn [_] (generate-string @all-scores))
+                 (println "ADD")))
+             :handle-created (fn [_] (generate-string (all-scores (get params "game"))))
              :available-media-types ["application/json"])
 
 (defroutes app
