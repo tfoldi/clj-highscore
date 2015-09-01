@@ -83,15 +83,15 @@
                   {:ts 10066, :event-type "pill"}]))
 
 (defn get-scores-for-game [dbspec game-name offset limit]
-  (println game-name)
   (->> (jdbc/query dbspec
-                ["SELECT games.user_name,
+                   ["SELECT games.user_name,
                        games.score,
                        games.duration FROM games
-              INNER JOIN game_types ON (game_types.id = games.game_type_id)
-              WHERE game_name = ?
-              ORDER BY score DESC, duration DESC
-              OFFSET ?
-              LIMIT ?;" game-name offset limit]
-                :identifiers inflector/keywordize)
+                      INNER JOIN game_types ON (game_types.id = games.game_type_id)
+                      WHERE game_name = ?
+                      ORDER BY score DESC, duration DESC
+                      OFFSET ?
+                      LIMIT ?;"
+                    game-name offset limit]
+                   :identifiers inflector/keywordize)
        vec))

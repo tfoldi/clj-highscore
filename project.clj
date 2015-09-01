@@ -13,6 +13,8 @@
                  [environ "1.0.0"]
                  [ring/ring-core "1.4.0"]
 
+                 ;; JSON support
+                 [ring/ring-json "0.4.0"]
 
                  ;; SQL migration support
                  [ragtime "0.5.1"]
