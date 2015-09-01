@@ -1,0 +1,12 @@
+{:up ["CREATE TABLE game_types(id serial, game_name text)"
+      "CREATE TABLE games(
+       id serial,
+       game_type_id int,
+       user_name text,
+       start_time timestamp,
+       score int,
+       duration int
+       )"]
+
+ :down ["DROP TABLE game_types"
+        "DROP TABLE games"]}

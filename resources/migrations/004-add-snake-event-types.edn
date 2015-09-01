@@ -1,0 +1,2 @@
+{:up   ["INSERT INTO event_types (event_name) VALUES ('keystroke'), ('pill')"]
+ :down ["DELETE FROM event_types WHERE event_name in ('keystroke', 'pill')"]}

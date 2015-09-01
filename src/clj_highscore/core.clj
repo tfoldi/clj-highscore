@@ -3,18 +3,19 @@
   (:require [liberator.core :refer [resource defresource]]
             [ring.adapter.jetty :as jetty]
             [ring.middleware.params :refer [wrap-params]]
-            [clojure.java.jdbc :as db]
+            ;[clojure.java.jdbc :as db]
+
+            [clj-highscore.db :as db]
+
+            [ring.middleware.cors :as ring-cors]
+
             [environ.core :refer [env]]
             [cheshire.core :refer [generate-string]]
             [compojure.handler :refer [site]]
             [compojure.core :refer [defroutes GET PUT POST DELETE ANY]]))
 
-;; You are not needed...
-#_ (defn- parse-number
-  "Reads a number from a string. Returns nil if not a number."
-  [s]
-  (if (re-find #"^-?\d+\.?\d*$" s)
-    (read-string s)))
+;; The DBSpec for the score database
+(def ^:private score-dbspec (env :database-url))
 
 (defn- integerify
   "Tries to convert a string to an integer or returns default-value/0 otherwise."
@@ -33,8 +34,13 @@
    limit results. If either offset or limit cannot be converted to an integer.
    they will be set to 0 and 100 respectively."
   [game offset limit]
+  (db/get-scores-for-game score-dbspec
+                          game
+                          (integerify offset)
+                          (integerify limit 100))
 
-  (db/query (env :database-url "postgres:highscore")
+
+  #_(db/query (env :database-url "postgres:highscore")
             ["select *
             from scores w
             where game = ?
@@ -52,13 +58,19 @@
   "Returns a GET parameter"
   [ctx param] (get-in ctx [:request :params param]))
 
+(defn- debug-val [v] (clojure.pprint/pprint v) v)
+
 (defresource get-scores
              [game]
              :allowed-methods [:get]
              :handle-ok (fn [ctx]
-                          (generate-string
-                            (vector game
-                                    (all-scores game (GET-param ctx "offset") (GET-param ctx "limit")))))
+                          (debug-val game)
+                          (->>
+                            (all-scores game (GET-param ctx "offset") (GET-param ctx "limit"))
+                            (debug-val)
+                            (vector game)
+                            ;(pr-str)
+                            (generate-string)))
              :available-media-types ["application/json"])
 
 (defresource add-score
@@ -72,7 +84,7 @@
                (let [params (get-in context [:request :form-params])]
         ;         (db/insert (env :database-url "postgres:highscore")
          ;          :scores
- 	
+
 ))
              :handle-created (fn [_] (generate-string (all-scores "tableau-cnake")))
              :available-media-types ["application/json"])
@@ -81,7 +93,11 @@
            (ANY "/" resource)
            (GET "/get-scores/:game" [game] (get-scores game)))
 
-(def handler (-> app wrap-params))
+(def handler
+  (ring-cors/wrap-cors (-> app wrap-params)
+             :access-control-allow-origin [#".*"]
+             :access-control-allow-methods [:get :put :post :delete])
+  )
 
 (defn -main [& [port]]
   (let [port (Integer. (or port (env :port) 80))]
