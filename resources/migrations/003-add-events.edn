@@ -1,0 +1,9 @@
+{:up ["CREATE TABLE event_types(id serial, event_name text)"
+      "CREATE TABLE events(
+        id serial,
+        game_id int,
+        ts int,
+        event_type_id int)"]
+
+ :down ["DROP TABLE events"
+        "DROP TABLE event_types"]}
