@@ -52,13 +52,6 @@
                               distinct
                               (map (fn [et] [et (event-type-id-for dbspec et)]))
                               (into {}))]
-
-      (clojure.pprint/pprint (map (fn [{:keys [timestamp type]}]
-                      {:ts            timestamp
-                       :game-id       game-id
-                       :event_type_id (event-type-ids type)})
-                    events))
-      (clojure.pprint/pprint event-type-ids)
       (apply jdbc/insert! dbspec
              :events
              (concat
@@ -74,19 +67,6 @@
              ))))
 
 
-;; test code
-(comment
-  (add-highscore score-dbspec {:user-name "T" :game-type "clj-snake" :start-time (t/now) :score 5}
-                 [{:ts 5245, :event-type "keystroke"}
-                  {:ts 5741, :event-type "keystroke"}
-                  {:ts 6047, :event-type "keystroke"}
-                  {:ts 7113, :event-type "keystroke"}
-                  {:ts 9989, :event-type "keystroke"}
-                  {:ts 10365, :event-type "keystroke"}
-                  {:ts 10529, :event-type "keystroke"}
-                  {:ts 10814, :event-type "keystroke"}
-                  {:ts 7829, :event-type "pill"}
-                  {:ts 10066, :event-type "pill"}]))
 
 (defn get-scores-for-game [dbspec game-name offset limit]
   (->> (jdbc/query dbspec
