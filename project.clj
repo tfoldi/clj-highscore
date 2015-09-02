@@ -17,7 +17,7 @@
                  [ring/ring-json "0.4.0"]
 
                  ;; SQL migration support
-                 [ragtime "0.5.1"]
+                 [ragtime "0.5.2"]
 
                  ;; Time & money
                  [clj-time "0.11.0"]
@@ -32,13 +32,6 @@
   ;; Running lein migrate will now migrate the database
   ;; to the latest version, and lein rollback will roll
   ;; the database back one version.
-
-  ;; Until a version 0.5.2 is available with the windows path serparator
-  ;; fix, its not recommended to run this version, or at least apply
-  ;; the changes in this patch:
-  ;;
-  ;; "Escape file separator in regex"
-  ;; https://github.com/cnatoli/ragtime/commit/636775a5ec9593c3b511cded27f345d1e509df60
 
   :aliases {"migrate"  ["run" "-m" "clj-highscore.migrate/migrate"]
             "rollback" ["run" "-m" "clj-highscore.migrate/rollback"]}
