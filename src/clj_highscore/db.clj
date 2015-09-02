@@ -47,20 +47,19 @@
                                    :entities inflector/sqlify-str)
           game-id (-> game-entry first :id)
           event-type-ids (->> events
-                              (map :event-type)
+                              (map :type)
                               sort
                               distinct
                               (map (fn [et] [et (event-type-id-for dbspec et)]))
                               (into {}))]
-
       (apply jdbc/insert! dbspec
              :events
              (concat
                ;; Get the proper stuff
-               (map (fn [{:keys [ts event-type]}]
-                      {:ts            ts
+               (map (fn [{:keys [timestamp type]}]
+                      {:ts            timestamp
                        :game-id       game-id
-                       :event_type_id (event-type-ids event-type)})
+                       :event_type_id (event-type-ids type)})
                     events)
 
                ;; convert entities
@@ -68,19 +67,6 @@
              ))))
 
 
-;; test code
-(comment
-  (add-highscore score-dbspec {:user-name "T" :game-type "clj-snake" :start-time (t/now) :score 5}
-                 [{:ts 5245, :event-type "keystroke"}
-                  {:ts 5741, :event-type "keystroke"}
-                  {:ts 6047, :event-type "keystroke"}
-                  {:ts 7113, :event-type "keystroke"}
-                  {:ts 9989, :event-type "keystroke"}
-                  {:ts 10365, :event-type "keystroke"}
-                  {:ts 10529, :event-type "keystroke"}
-                  {:ts 10814, :event-type "keystroke"}
-                  {:ts 7829, :event-type "pill"}
-                  {:ts 10066, :event-type "pill"}]))
 
 (defn get-scores-for-game [dbspec game-name offset limit]
   (->> (jdbc/query dbspec
