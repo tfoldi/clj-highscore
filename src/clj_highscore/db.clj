@@ -47,20 +47,26 @@
                                    :entities inflector/sqlify-str)
           game-id (-> game-entry first :id)
           event-type-ids (->> events
-                              (map :event-type)
+                              (map :type)
                               sort
                               distinct
                               (map (fn [et] [et (event-type-id-for dbspec et)]))
                               (into {}))]
 
+      (clojure.pprint/pprint (map (fn [{:keys [timestamp type]}]
+                      {:ts            timestamp
+                       :game-id       game-id
+                       :event_type_id (event-type-ids type)})
+                    events))
+      (clojure.pprint/pprint event-type-ids)
       (apply jdbc/insert! dbspec
              :events
              (concat
                ;; Get the proper stuff
-               (map (fn [{:keys [ts event-type]}]
-                      {:ts            ts
+               (map (fn [{:keys [timestamp type]}]
+                      {:ts            timestamp
                        :game-id       game-id
-                       :event_type_id (event-type-ids event-type)})
+                       :event_type_id (event-type-ids type)})
                     events)
 
                ;; convert entities
