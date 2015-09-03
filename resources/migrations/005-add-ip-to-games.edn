@@ -1,0 +1,2 @@
+{:up   ["ALTER TABLE games ADD source_ip VARCHAR(64);"]
+ :down ["ALTER TABLE games DROP COLUMN source_ip;"]}

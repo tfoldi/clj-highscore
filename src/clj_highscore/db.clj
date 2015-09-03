@@ -29,7 +29,7 @@
 
 (defn add-highscore
   "Adds a high-score to the database"
-  [dbspec {:keys [user-name game-type start-time score duration] :as game-data} events]
+  [dbspec {:keys [user-name game-type start-time score duration] :as game-data} events source-ip]
   (let [game-id (game-id-for dbspec game-type)]
     ;; Throw an error if the game type cannot be found
     (when (nil? game-id)
@@ -43,7 +43,8 @@
                                     :user-name    user-name
                                     :start-time   (tc/to-sql-time start-time)
                                     :score        score
-                                    :duration     duration}
+                                    :duration     duration
+                                    :source-ip    source-ip}
                                    :entities inflector/sqlify-str)
           game-id (-> game-entry first :id)
           event-type-ids (->> events

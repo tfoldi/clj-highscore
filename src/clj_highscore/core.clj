@@ -79,8 +79,19 @@
              :handle-malformed "user-name, game-type, score, duration cannot be empty!"
              :post!
              (fn [context]
-               (let [params (-> context :request :body)]
-                 (db/add-highscore score-dbspec params (params :events))))
+               (let [params (-> context :request :body)
+                     ;; Add the IP address from the request.
+                     ;; TODO: maybe use (or (get-in request [:headers "x-forwarded-for"]) (:remote-addr request))
+
+                     ;; If the request comes from behind a proxy, this will
+                     ;; be the address of the proxy.
+
+                     ;; If we are behind a load balancer, we should be able to
+                     ;; get the ip from the 'x-forwarded-for' header, but if the
+                     ;; request comes from behind a proxy, it will be a list of
+                     ;; IP addresses not a single one.
+                     source-ip (-> context :request :remote-addr)]
+                 (db/add-highscore score-dbspec params (params :events) source-ip)))
              :handle-created (fn [ctx]
                                (let [{:keys [game-type]} (-> ctx :request :body)]
                                  (db/get-scores-for-game score-dbspec game-type 0 10)))
