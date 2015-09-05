@@ -1,6 +1,6 @@
 # clj-highscore
 
-*clj-highscore* is a generic REST API web service to store/retrieve high score and event information from javascript games. Originnaly used with [Tableau Cnake](http://tfoldi.github.io/cljs-tableau-cnake/).
+*clj-highscore* is a generic REST API web service to store/retrieve high score and event information from javascript games. Originally used with [Tableau Cnake](http://tfoldi.github.io/cljs-tableau-cnake/).
 
 # What's this?
 
