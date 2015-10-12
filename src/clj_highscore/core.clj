@@ -3,7 +3,6 @@
   (:require [liberator.core :refer [resource defresource]]
             [ring.adapter.jetty :as jetty]
             [ring.middleware.params :refer [wrap-params]]
-    ;[clojure.java.jdbc :as db]
 
             [clj-highscore.db :as db]
 
@@ -13,8 +12,7 @@
             [environ.core :refer [env]]
             [cheshire.core :refer [generate-string]]
             [compojure.handler :refer [site]]
-            [compojure.core :refer [defroutes GET PUT POST DELETE ANY]])
-  (:import (java.sql SQLException)))
+            [compojure.core :refer [defroutes GET PUT POST DELETE ANY]]))
 
 ;; The DBSpec for the score database
 (def ^:private score-dbspec (env :database-url))
