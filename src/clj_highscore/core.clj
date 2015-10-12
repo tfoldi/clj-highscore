@@ -97,10 +97,36 @@
                                  (db/get-scores-for-game score-dbspec game-type 0 10)))
              :available-media-types ["application/json"])
 
+
+(defresource new-game
+             [game-type]
+             :allowed-methods [:post]
+             :malformed? (fn [context]
+                           (let [params (-> context :request :body)]
+                             (or (empty? game-type)
+                                 (empty? (params :user-name))
+                                 (empty? (params :start-time)))))
+             :handle-malformed "game-type, user-name and start-time cannot be empty"
+
+             :post!
+             (fn [context]
+               (let [params (-> context :request :body)
+                     source-ip (-> context :request :remote-addr)]
+                 {"game-id" (db/add-new-game score-dbspec params source-ip)}))
+
+             :handle-created (fn [ctx] {"game-id" (get ctx "game-id")} )
+             :available-media-types ["application/json"])
+
+
+
+
+
+
 (defroutes app
            (ANY "/" resource)
            (GET "/get-scores/:game" [game] (get-scores game))
-           (POST "/new-score"  [] add-score ))
+           (POST "/new-score"  [] add-score )
+           (POST "/new-game/:game" [game] (new-game game) ))
 
 (def handler
   (-> app

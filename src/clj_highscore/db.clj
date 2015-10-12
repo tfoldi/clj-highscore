@@ -67,6 +67,29 @@
                [:entities inflector/sqlify-str])
              ))))
 
+(defn add-new-game [dbspec {:keys [user-name game-type start-time] :as game-data} source-ip]
+
+  (let [game-id (game-id-for dbspec game-type)]
+    ;; Throw an error if the game type cannot be found
+    (when (nil? game-id)
+      (throw (ex-info (str "Cannot find game by name: " game-type)
+                      {})))
+
+    ;; Add the game entry
+    (let [game-entry (jdbc/insert! dbspec
+                                   :games
+                                   {:game-type-id game-id
+                                    :user-name    user-name
+                                    :start-time   (tc/to-sql-time start-time)
+                                    :score        nil
+                                    :duration     nil
+                                    :source-ip    source-ip}
+                                   :entities inflector/sqlify-str)
+          game-id (-> game-entry first :id)]
+      ;; Return the id of this game
+      game-id
+      ))
+  )
 
 
 (defn get-scores-for-game [dbspec game-name offset limit]
