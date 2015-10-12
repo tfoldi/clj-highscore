@@ -67,7 +67,66 @@
                [:entities inflector/sqlify-str])
              ))))
 
+(defn add-new-game [dbspec {:keys [user-name game-type start-time] :as game-data} source-ip]
 
+  (let [game-id (game-id-for dbspec game-type)]
+    ;; Throw an error if the game type cannot be found
+    (when (nil? game-id)
+      (throw (ex-info (str "Cannot find game by name: " game-type)
+                      {})))
+
+    ;; Add the game entry
+    (let [game-entry (jdbc/insert! dbspec
+                                   :games
+                                   {:game-type-id game-id
+                                    :user-name    user-name
+                                    :start-time   (tc/to-sql-time start-time)
+                                    :score        nil
+                                    :duration     nil
+                                    :source-ip    source-ip}
+                                   :entities inflector/sqlify-str)
+          game-id (-> game-entry first :id)]
+      ;; Return the id of this game
+      game-id
+      ))
+  )
+
+
+(defn add-events-to-game [dbspec game-id duration score events]
+
+  ;; Throw an error if the game type cannot be found
+  (when (nil? game-id)
+    (throw (ex-info (str "Cannot find game by id: " game-id)
+                    {})))
+
+  ;; Update the games attributes to the new value
+  (jdbc/update! dbspec :games
+                {:duration duration
+                 :score    score}
+                ["id = ?" game-id])
+
+  ;; Add the game entry
+  (let [event-type-ids (->> events
+                            (map :type)
+                            sort
+                            distinct
+                            (map (fn [et] [et (event-type-id-for dbspec et)]))
+                            (into {}))]
+
+    (apply jdbc/insert! dbspec
+           :events
+           (concat
+             ;; Get the proper stuff
+             (map (fn [{:keys [timestamp type]}]
+                    {:ts            timestamp
+                     :game-id       game-id
+                     :event_type_id (event-type-ids type)})
+                  events)
+
+             ;; convert entities
+             [:entities inflector/sqlify-str])
+           ))
+  )
 
 (defn get-scores-for-game [dbspec game-name offset limit]
   (->> (jdbc/query dbspec
