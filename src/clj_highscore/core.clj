@@ -3,32 +3,33 @@
   (:require [liberator.core :refer [resource defresource]]
             [ring.adapter.jetty :as jetty]
             [ring.middleware.params :refer [wrap-params]]
-            ;[clojure.java.jdbc :as db]
+    ;[clojure.java.jdbc :as db]
 
             [clj-highscore.db :as db]
 
             [ring.middleware.cors :as ring-cors]
-            [ring.middleware.json :as ring-json ]
+            [ring.middleware.json :as ring-json]
 
             [environ.core :refer [env]]
             [cheshire.core :refer [generate-string]]
             [compojure.handler :refer [site]]
-            [compojure.core :refer [defroutes GET PUT POST DELETE ANY]]))
+            [compojure.core :refer [defroutes GET PUT POST DELETE ANY]])
+  (:import (java.sql SQLException)))
 
 ;; The DBSpec for the score database
 (def ^:private score-dbspec (env :database-url))
 
 (defn- integerify
   "Tries to convert a string to an integer or returns default-value/0 otherwise."
- ; main arity
- ([a-string default-value]
-  (try
-   (if (or (nil? a-string) (= "" a-string))
+  ; main arity
+  ([a-string default-value]
+   (try
+     (if (or (nil? a-string) (= "" a-string))
        default-value
        (Integer/valueOf a-string))
-   (catch Exception e default-value)))
- ; helper arity for 0
- ([a-string] (integerify a-string 0)))
+     (catch Exception e default-value)))
+  ; helper arity for 0
+  ([a-string] (integerify a-string 0)))
 
 (defn all-scores
   "Returns all scores for the game named game, starting from offset, max
@@ -39,7 +40,6 @@
                           game
                           (integerify offset)
                           (integerify limit 10))
-
 
   )
 
@@ -114,9 +114,33 @@
                      source-ip (-> context :request :remote-addr)]
                  {"game-id" (db/add-new-game score-dbspec params source-ip)}))
 
-             :handle-created (fn [ctx] {"game-id" (get ctx "game-id")} )
-             :available-media-types ["application/json"])
+             :handle-created (fn [ctx] {"game-id" (get ctx "game-id")})
+             :available-media-types ["application/json"]
+             )
 
+
+(defresource add-events
+             [game-id]
+             :allowed-methods [:post]
+             :malformed? (fn [context]
+                           (let [params (-> context :request :body)]
+                             (or (nil? game-id)
+                                 (nil? (params :score))
+                                 (nil? (params :duration))
+                                 (empty? (params :events))
+                                 )))
+
+             :handle-malformed "score, duration and events cannot be emtpy"
+
+             :post!
+             (fn [context]
+               (let [{:keys [score duration events]} (-> context :request :body)]
+                 (db/add-events-to-game score-dbspec game-id duration score events)))
+
+
+             :handle-created (fn [ctx] nil)
+             :available-media-types ["application/json"]
+             )
 
 
 
@@ -125,8 +149,12 @@
 (defroutes app
            (ANY "/" resource)
            (GET "/get-scores/:game" [game] (get-scores game))
-           (POST "/new-score"  [] add-score )
-           (POST "/new-game/:game" [game] (new-game game) ))
+           (POST "/new-score" [] add-score)
+           (POST "/new-game/:game" [game] (new-game game))
+
+           (POST "/add-events/:game-id" [game-id] (add-events (Integer. game-id)))
+
+           )
 
 (def handler
   (-> app
