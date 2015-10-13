@@ -140,6 +140,21 @@
              :available-media-types ["application/json"]
              )
 
+(defresource get-events
+             [game-id]
+             :allowed-methods [:get]
+             :available-media-types ["application/json"]
+             :malformed? (fn [context]
+                           (or (nil? game-id)
+                               (db/has-game score-dbspec game-id)))
+
+             :handle-malformed "The game by the specified game id cannot be found."
+
+             :handle-ok
+             (fn [context]
+               (db/get-game-and-events score-dbspec game-id)
+               )
+             )
 
 
 
@@ -147,6 +162,8 @@
 (defroutes app
            (ANY "/" resource)
            (GET "/get-scores/:game" [game] (get-scores game))
+           (GET "/get-events/:game-id" [game-id] (get-events (Integer. game-id)))
+
            (POST "/new-score" [] add-score)
            (POST "/new-game/:game" [game] (new-game game))
 
