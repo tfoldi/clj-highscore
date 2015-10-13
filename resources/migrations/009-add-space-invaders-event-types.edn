@@ -1,2 +1,2 @@
 {:up   ["INSERT INTO event_types (event_name) VALUES ('die'), ('move'), ('fire'), ('big-monster'), ('normal-monster')"]
- :down ["DELETE FROM event_types WHERE event_name in ('die'), ('move'), ('fire'), ('big-monster'), ('normal-monster')"]}
+ :down ["DELETE FROM event_types WHERE event_name in ('die', 'move', 'fire', 'big-monster', 'normal-monster')"]}
