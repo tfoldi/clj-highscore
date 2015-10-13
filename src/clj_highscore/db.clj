@@ -141,7 +141,7 @@
                        games.duration FROM games
                       INNER JOIN game_types ON (game_types.id = games.game_type_id)
                       WHERE game_name = ?
-                      ORDER BY score DESC, duration ASC
+                      ORDER BY score DESC NULLS LAST, duration ASC
                       OFFSET ?
                       LIMIT ?;"
                     game-name offset limit]
