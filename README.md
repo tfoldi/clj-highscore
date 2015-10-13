@@ -1,4 +1,5 @@
 # clj-highscore
+[![Build Status](https://travis-ci.org/tfoldi/clj-highscore.svg?branch=master)](https://travis-ci.org/tfoldi/clj-highscore)
 
 *clj-highscore* is a generic REST API web service to store/retrieve high score and event information from javascript games. Originally used with [Tableau Cnake](http://tfoldi.github.io/cljs-tableau-cnake/).
 
