@@ -27,6 +27,12 @@
       (-> event-type first :id)
       nil)))
 
+(defn has-game [dbspec game-id]
+  (> 0
+     (-> (jdbc/query dbspec ["SELECT COUNT(1) FROM games WHERE id=?" game-id])
+         first
+         :count)))
+
 (defn add-highscore
   "Adds a high-score to the database"
   [dbspec {:keys [user-name game-type start-time score duration] :as game-data} events source-ip]
@@ -141,3 +147,28 @@
                     game-name offset limit]
                    :identifiers inflector/keywordize)
        vec))
+
+
+(defn get-game-and-events [dbspec game-id]
+  (let [game-data (jdbc/query dbspec
+                              ["SELECT
+                                 games.user_name,
+                                 games.score,
+                                 games.duration,
+                                 game_types.game_name
+                               FROM
+                                 games
+                               INNER JOIN game_types ON (game_types.id= games.game_type_id)
+                               WHERE games.id = ?;" game-id])
+
+        event-data (jdbc/query dbspec
+                               ["SELECT
+                                  events.id,
+                                  events.ts,
+                                  event_types.event_name
+                                 FROM
+                                   events
+                                 INNER JOIN event_types ON (events.event_type_id = event_types.id)
+                                 WHERE events.game_id=?" game-id])]
+    (when-first [game game-data]
+      (assoc game :events event-data))))
