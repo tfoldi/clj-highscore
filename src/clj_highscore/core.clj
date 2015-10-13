@@ -72,9 +72,10 @@
                            (let [params (-> context :request :body)]
                              (or (empty? (params :game-type))
                                  (empty? (params :user-name))
+                                 (empty? (params :events))
                                  (not (number? (params :score)))
                                  (not (number? (params :duration))))))
-             :handle-malformed "user-name, game-type, score, duration cannot be empty!"
+             :handle-malformed "user-name, game-type, score, duration, events cannot be empty!"
              :post!
              (fn [context]
                (let [params (-> context :request :body)

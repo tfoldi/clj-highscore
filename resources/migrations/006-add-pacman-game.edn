@@ -1,0 +1,2 @@
+{:up   ["INSERT INTO game_types (game_name) VALUES ('pacman')"]
+ :down ["DELETE FROM game_types WHERE game_name='pacman'"]}
